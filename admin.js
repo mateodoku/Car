@@ -28,28 +28,119 @@ async function showState() {
   $("#adminLogin").classList.toggle("hidden", logged);
   $("#adminDashboard").classList.toggle("hidden", !logged);
   if (logged) await renderAdmin();
+
 }
 
 async function renderAdmin() {
-const { data, error } = await db
-  .from("bookings")
-  .select("*")
-  .order("created_at", { ascending: false });
 
-if (error) {
-  console.log(error);
-} else {
-  bookings = data || [];
-}
+  const { data, error } = await db
+    .from("bookings")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.log(error);
+    bookings = [];
+  } else {
+    bookings = data || [];
   }
+
   $("#metricCars").textContent = cars.length;
   $("#metricAvailable").textContent = cars.filter(car => car.available).length;
   $("#metricBookings").textContent = bookings.length;
-  $("#metricRevenue").textContent = money(bookings.filter(booking => booking.status !== "Cancelled").reduce((sum, booking) => sum + Number(booking.total || 0), 0));
-  $("#adminCarsTable").innerHTML = cars.length ? `<table><thead><tr><th>Vehicle</th><th>License plate</th><th>Category</th><th>Price / day</th><th>Status</th><th>Actions</th></tr></thead><tbody>${cars.map(car => `<tr><td><b>${esc(car.name)}</b><br>${esc(car.brand)}</td><td>${esc(car.plate || "Not set")}</td><td>${esc(car.category)}</td><td>${money(car.price)}</td><td>${car.available ? "Available" : "Unavailable"}</td><td><div class="table-actions"><button onclick="editCar('${car.id}')">Edit</button><button class="danger" onclick="deleteCar('${car.id}')">Delete</button></div></td></tr>`).join("")}</tbody></table>` : '<div class="empty">No vehicles yet. Add your first vehicle above.</div>';
-  $("#adminBookingsTable").innerHTML = bookings.length ? `<table><thead><tr><th>Reference</th><th>Customer</th><th>Vehicle</th><th>Dates</th><th>Total</th><th>Status</th></tr></thead><tbody>${bookings.map(booking => { const car = cars.find(item => item.id === booking.carId); return `<tr><td>${esc(booking.reference)}</td><td>${esc(booking.customerName)}</td><td>${esc(car?.name || "Removed")}</td><td>${esc(booking.pickup)} → ${esc(booking.return)}</td><td>${money(booking.total)}</td><td>${esc(booking.status)}</td></tr>`; }).join("")}</tbody></table>` : '<div class="empty">No reservations yet.</div>';
-}
 
+  $("#metricRevenue").textContent = money(
+    bookings
+      .filter(booking => booking.status !== "Cancelled")
+      .reduce((sum, booking) => sum + Number(booking.total || 0), 0)
+  );
+
+
+  $("#adminCarsTable").innerHTML = cars.length 
+  ? `<table>
+  <thead>
+  <tr>
+  <th>Vehicle</th>
+  <th>License plate</th>
+  <th>Category</th>
+  <th>Price / day</th>
+  <th>Status</th>
+  <th>Actions</th>
+  </tr>
+  </thead>
+  <tbody>
+  ${cars.map(car => `
+  <tr>
+  <td><b>${esc(car.name)}</b><br>${esc(car.brand)}</td>
+  <td>${esc(car.plate || "Not set")}</td>
+  <td>${esc(car.category)}</td>
+  <td>${money(car.price)}</td>
+  <td>${car.available ? "Available" : "Unavailable"}</td>
+  <td>
+  <button onclick="editCar('${car.id}')">Edit</button>
+  <button class="danger" onclick="deleteCar('${car.id}')">Delete</button>
+  </td>
+  </tr>
+  `).join("")}
+  </tbody>
+  </table>`
+  :
+  '<div class="empty">No vehicles yet.</div>';
+
+
+
+  $("#adminBookingsTable").innerHTML = bookings.length
+
+  ? `<table>
+  <thead>
+  <tr>
+  <th>Reference</th>
+  <th>Customer</th>
+  <th>Vehicle</th>
+  <th>Dates</th>
+  <th>Total</th>
+  <th>Status</th>
+  </tr>
+  </thead>
+
+  <tbody>
+
+  ${bookings.map(booking => {
+
+    const car = cars.find(item => item.id === booking.carId);
+
+    return `
+    <tr>
+    <td>${esc(booking.reference)}</td>
+    <td>
+    ${esc(booking.customerName)}<br>
+    ${esc(booking.customerEmail)}
+    </td>
+
+    <td>${esc(car?.name || booking.carId)}</td>
+
+    <td>
+    ${esc(booking.pickup)} → ${esc(booking.return)}
+    </td>
+
+    <td>${money(booking.total)}</td>
+
+    <td>${esc(booking.status)}</td>
+
+    </tr>
+    `;
+
+  }).join("")}
+
+  </tbody>
+
+  </table>`
+
+  :
+
+  '<div class="empty">No reservations yet.</div>';
+
+}
 function openModal(name) { $(`#${name}Modal`).classList.remove("hidden"); document.body.style.overflow = "hidden"; }
 function closeModal(name) { $(`#${name}Modal`).classList.add("hidden"); document.body.style.overflow = ""; }
 function setPreview(src = "") { pendingImage = src; $("#imagePreview").classList.toggle("hidden", !src); $("#imagePreviewImg").src = src || ""; }
