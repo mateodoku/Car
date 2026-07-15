@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#050607">
+  <title>Hotspot Rental — Premium Car Rental</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Manrope:wght@600;700&family=Playfair+Display:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="locked">
+  <div class="grain"></div>
+
+  <section class="intro intro-stage-black" id="intro">
+    <div class="intro-black"></div>
+
+    <div class="intro-film">
+      <video id="introVideo" autoplay muted playsinline preload="auto" poster="assets/porsche-snow-hotspot.png">
+        <source src="https://videos.pexels.com/video-files/35400879/35400879-hd_1920_1080_30fps.mp4" type="video/mp4">
+      </video>
+      <img class="intro-fallback" src="assets/porsche-snow-hotspot.png" alt="Sports car driving through snowy mountains">
+      <div class="intro-film-grade"></div>
+    </div>
+
+    <div class="intro-brand">HOTSPOT RENTAL</div>
+
+    <div class="intro-copy">
+      <span>THE ART OF MOTION</span>
+      <h1>Drive beyond<br><em>ordinary.</em></h1>
+    </div>
+
+    <div class="intro-line"><i></i></div>
+  </section>
+
+  <div class="site" id="site" aria-hidden="true">
+    <header>
+      <a class="brand" href="#home"><i></i>HOTSPOT RENTAL</a>
+      <nav><a href="#fleet">Fleet</a><a href="#experience">Experience</a><a href="#bookings">Bookings</a></nav>
+      <button class="menu" id="menu"><span></span><span></span></button>
+    </header>
+
+    <div class="mobile-nav" id="mobileNav">
+      <a href="#fleet">Fleet</a><a href="#experience">Experience</a><a href="#bookings">Bookings</a>
+    </div>
+
+    <main>
+      <section id="home" class="hero">
+        <img src="assets/porsche-snow-hotspot.png" alt="Porsche-style sports car driving through snowy mountains">
+        <div class="hero-shade"></div>
+        <div class="hero-copy reveal">
+          <span>ALPINE COLLECTION / 001</span>
+          <h1>Drive beyond<br><em>ordinary.</em></h1>
+          <p>Curated cars, instant booking, and a rental experience designed around freedom.</p>
+          <div><a class="primary" href="#fleet">Explore fleet <b>→</b></a><a class="secondary" href="#experience">Discover the experience ↗</a></div>
+        </div>
+        <div class="hero-meta"><span>PREMIUM RENTAL SERVICE</span><span>SCROLL ↓</span></div>
+      </section>
+
+      <section class="search reveal">
+        <form id="searchForm">
+          <label><span>Pickup</span><input type="date" id="pickupDate" required></label>
+          <label><span>Return</span><input type="date" id="returnDate" required></label>
+          <label><span>Category</span><select id="categoryFilter"><option value="">All vehicles</option></select></label>
+          <label><span>Maximum / day</span><input type="number" id="maxPrice" min="0" placeholder="No limit"></label>
+          <button type="submit">Find a car <b>→</b></button>
+        </form>
+      </section>
+
+      <section id="fleet" class="fleet">
+        <div class="section-head reveal">
+          <div><span>CURATED FLEET</span><h2>Machines with<br><em>character.</em></h2></div>
+          <div><p>Selected for design, comfort, and unforgettable roads.</p><select id="sortCars"><option value="featured">Curated order</option><option value="priceAsc">Price low to high</option><option value="priceDesc">Price high to low</option><option value="name">Name A–Z</option></select></div>
+        </div>
+        <div class="cars" id="carsGrid"></div>
+        <div class="empty hidden" id="emptyCars">No vehicles match your filters.</div>
+      </section>
+
+      <section id="experience" class="experience">
+        <div class="reveal"><span>THE EXPERIENCE</span><h2>Everything<br><em>except ordinary.</em></h2><p>Transparent booking, flexible changes, and a fleet prepared around your arrival.</p></div>
+        <div class="experience-list">
+          <article class="reveal"><b>01</b><div><h3>Instant reservation</h3><p>Choose your dates and confirm in minutes.</p></div></article>
+          <article class="reveal"><b>02</b><div><h3>Curated handover</h3><p>Every vehicle is prepared before you arrive.</p></div></article>
+          <article class="reveal"><b>03</b><div><h3>Human support</h3><p>Direct assistance throughout your rental.</p></div></article>
+        </div>
+      </section>
+
+      <section id="bookings" class="bookings">
+        <div class="section-head reveal"><div><span>YOUR JOURNEY</span><h2>Current<br><em>bookings.</em></h2></div></div>
+        <div id="bookingsList"></div>
+        <div id="bookingsEmpty" class="empty">No reservations yet.</div>
+      </section>
+
+      <section class="cta reveal"><div><span>HOTSPOT RENTAL COLLECTION</span><h2>Your next drive<br><em>starts here.</em></h2></div><a href="#fleet">Explore ↗</a></section>
+    </main>
+
+    <footer><div class="brand"><i></i>HOTSPOT RENTAL</div><p>Premium cars. Seamless journeys.</p><div><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Contact</a></div></footer>
+  </div>
+
+  <div class="modal hidden" id="bookingModal"><div class="backdrop" data-close="booking"></div><div class="modal-card"><button class="x" data-close="booking">×</button><div id="bookingContent"></div></div></div>
+  <div class="toast" id="toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>

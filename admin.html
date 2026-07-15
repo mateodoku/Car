@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f7f8fc">
+  <title>Hotspot Rental Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="admin-body">
+  <main class="admin-page">
+    <div class="admin-page-header">
+      <div class="brand"><i></i>HOTSPOT RENTAL <small>ADMIN</small></div>
+      <a href="/">← Return to website</a>
+    </div>
+
+    <section id="adminLogin" class="admin-login-box">
+      <div class="lock-mark">⌁</div>
+      <span>PRIVATE ACCESS</span>
+      <h2>Welcome back.</h2>
+      <p>Enter your password to manage the Hotspot Rental fleet.</p>
+      <form id="adminLoginForm" class="stack">
+        <label>Password<input id="adminPassword" type="password" autocomplete="current-password" placeholder="Enter password" required></label>
+        <button>Unlock dashboard <b>→</b></button>
+        <p id="adminError"></p>
+      </form>
+    </section>
+
+    <section id="adminDashboard" class="admin-dashboard hidden">
+      <div class="admin-top">
+        <div><span>HOTSPOT RENTAL CONTROL ROOM</span><h2>Fleet overview</h2></div>
+        <button id="adminLogout">Log out</button>
+      </div>
+      <div class="metrics">
+        <article><span>Total cars</span><b id="metricCars">0</b></article>
+        <article><span>Available now</span><b id="metricAvailable">0</b></article>
+        <article><span>Bookings</span><b id="metricBookings">0</b></article>
+        <article><span>Revenue</span><b id="metricRevenue">€0</b></article>
+      </div>
+      <div class="tabs"><button class="active" data-tab="cars">Vehicles</button><button data-tab="bookings">Bookings</button></div>
+      <section id="adminCarsTab"><div class="admin-bar"><div><span>INVENTORY</span><h3>Your vehicle collection</h3></div><button id="addCar">+ Add vehicle</button></div><div class="table-wrap" id="adminCarsTable"></div></section>
+      <section id="adminBookingsTab" class="hidden"><div class="admin-bar"><div><span>RESERVATIONS</span><h3>Recent bookings</h3></div></div><div class="table-wrap" id="adminBookingsTable"></div></section>
+    </section>
+  </main>
+
+  <div class="modal hidden" id="editorModal"><div class="backdrop" data-close="editor"></div><div class="modal-card"><button class="x" data-close="editor" aria-label="Close">×</button><span>FLEET EDITOR</span><h2 id="editorTitle">Add vehicle</h2><form id="editorForm" class="editor"><input type="hidden" id="editCarId"><label>Name<input id="carName" placeholder="e.g. Range Rover Sport" required></label><label>Brand<input id="carBrand" placeholder="e.g. Land Rover" required></label><label>Category<input id="carCategory" list="categoryOptions" placeholder="e.g. SUV" required></label><datalist id="categoryOptions"><option>Economy</option><option>Compact</option><option>SUV</option><option>Luxury</option><option>Performance</option><option>Electric</option></datalist><label>Price / day (€)<input id="carPrice" type="number" min="1" step="1" placeholder="120" required></label><label>Seats<input id="carSeats" type="number" min="1" max="9" value="5" required></label><label>Transmission<select id="carTransmission"><option>Automatic</option><option>Manual</option></select></label><label>Fuel<select id="carFuel"><option>Petrol</option><option>Diesel</option><option>Hybrid</option><option>Electric</option></select></label><label>Color<input id="carColor" placeholder="e.g. Midnight black" required></label><label>License plate<input id="carPlate" placeholder="e.g. AA 123 BB" maxlength="20" required></label><label class="wide upload-field">Vehicle photo <small>Upload a JPG, PNG, or WebP from your device (max 2 MB)</small><input id="carImageFile" type="file" accept="image/jpeg,image/png,image/webp"></label><div class="image-preview wide hidden" id="imagePreview"><img id="imagePreviewImg" alt="Vehicle preview"><button type="button" id="clearImage">Remove photo</button></div><label class="wide">Description<textarea id="carDescription" rows="4" placeholder="Short description for customers" required></textarea></label><label class="check wide"><input type="checkbox" id="carAvailable" checked> Available to book</label><div class="actions wide"><button type="button" data-close="editor">Cancel</button><button type="submit">Save vehicle</button></div></form></div></div>
+  <div class="toast" id="toast"></div>
+  <script src="/admin.js"></script>
+</body>
+</html>
