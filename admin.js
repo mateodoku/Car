@@ -94,12 +94,12 @@ async function renderAdmin() {
   ? `<table>
   <thead>
   <tr>
-  <th>Reference</th>
-  <th>Customer</th>
-  <th>Vehicle</th>
-  <th>Dates</th>
-  <th>Total</th>
-  <th>Status</th>
+  <th>reference</th>
+  <th>customer</th>
+  <th>vehicle</th>
+  <th>dates</th>
+  <th>total</th>
+  <th>status</th>
   </tr>
   </thead>
 
@@ -107,7 +107,7 @@ async function renderAdmin() {
 
   ${bookings.map(booking => {
 
-    const car = cars.find(item => item.id === booking.carId);
+    const car = cars.find(item => item.id === booking.carid);
 
     return `
     <tr>
@@ -117,7 +117,7 @@ async function renderAdmin() {
     ${esc(booking.customerEmail)}
     </td>
 
-    <td>${esc(car?.name || booking.carId)}</td>
+    <td>${esc(car?.name || booking.carid)}</td>
 
     <td>
     ${esc(booking.pickup)} → ${esc(booking.return)}
@@ -150,7 +150,7 @@ window.editCar = id => {
   const car = cars.find(item => item.id === id);
   if (!car) return;
   $("#editortitle").textContent = "Edit vehicle";
-  $("#editCarid").value = car.id;
+  $("#editcarid").value = car.id;
   $("#carname").value = car.name;
   $("#carbrand").value = car.brand;
   $("#carcategory").value = car.category;
