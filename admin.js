@@ -1,24 +1,22 @@
-const $ = selector => document.querySelector(selector);
-const $$ = selector => [...document.querySelectorAll(selector)];
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => [...document.querySelectorAll(s)];
 
-const esc = value =>
-  String(value ?? "").replace(/[&<>"']/g, char => ({
-    "&":"&amp;",
-    "<":"&lt;",
-    ">":"&gt;",
-    '"':"&quot;",
-    "'":"&#039;"
-  }[char]));
-
-const money = value =>
+const money = (v) =>
   new Intl.NumberFormat("de-DE", {
-    style:"currency",
-    currency:"EUR"
-  }).format(Number(value) || 0);
+    style: "currency",
+    currency: "EUR",
+  }).format(Number(v || 0));
 
-const uid = () =>
-  "c_" + Date.now().toString(36);
+const esc = (v) =>
+  String(v ?? "").replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;"
+  }[c]));
 
+const uid = () => "c_" + Date.now();
 
 let cars = [];
 let bookings = [];
@@ -26,49 +24,63 @@ let logged = sessionStorage.getItem("hotspot_rental_admin") === "1";
 let pendingImage = "";
 
 
-async function loadCars(){
+// ==========================
+// SUPABASE LOADERS
+// ==========================
 
-  const {data,error}=await db
+async function loadCars() {
+
+  const { data, error } = await db
     .from("cars")
     .select("*")
-    .order("created_at",{ascending:false});
+    .order("created_at", { ascending: false });
 
-  if(error){
-    console.error(error);
+  if (error) {
+    console.error("Cars error:", error);
+    toast("Could not load cars");
     return;
   }
 
-  cars=data || [];
+  cars = data || [];
 }
 
 
-async function loadBookings(){
 
-  const {data,error}=await db
+async function loadBookings() {
+
+  const { data, error } = await db
     .from("bookings")
     .select("*")
-    .order("created_at",{ascending:false});
+    .order("created_at", { ascending: false });
 
-  if(error){
-    console.error(error);
+
+  if (error) {
+    console.error("Bookings error:", error);
+    toast("Could not load bookings");
     return;
   }
 
-  bookings=data || [];
+
+  bookings = data || [];
+
 }
 
 
 
-async function renderAdmin(){
+// ==========================
+// DASHBOARD
+// ==========================
+
+async function renderAdmin() {
 
   await loadCars();
   await loadBookings();
 
 
-  $("#metricCars").textContent=cars.length;
+  $("#metricCars").textContent = cars.length;
 
   $("#metricAvailable").textContent =
-    cars.filter(car=>car.available).length;
+    cars.filter(c => c.available).length;
 
   $("#metricBookings").textContent =
     bookings.length;
@@ -77,9 +89,10 @@ async function renderAdmin(){
   $("#metricRevenue").textContent =
     money(
       bookings
-      .filter(b=>b.status!=="Cancelled")
-      .reduce((a,b)=>a+Number(b.total||0),0)
+        .filter(b => b.status !== "Cancelled")
+        .reduce((sum,b)=>sum + Number(b.total || 0),0)
     );
+
 
 
   $("#adminCarsTable").innerHTML = cars.length ? `
@@ -113,11 +126,18 @@ ${esc(car.brand)}
 
 <td>${money(car.price)}</td>
 
-<td>${car.available ? "Available":"Unavailable"}</td>
+<td>
+${car.available ? "Available":"Unavailable"}
+</td>
 
 <td>
-<button onclick="editCar('${car.id}')">Edit</button>
-<button class="danger" onclick="deleteCar('${car.id}')">Delete</button>
+<button onclick="editCar('${car.id}')">
+Edit
+</button>
+
+<button class="danger" onclick="deleteCar('${car.id}')">
+Delete
+</button>
 </td>
 
 </tr>
@@ -127,8 +147,9 @@ ${esc(car.brand)}
 </tbody>
 </table>
 
-`:
+` :
 `<div class="empty">No vehicles yet.</div>`;
+
 
 
 
@@ -147,11 +168,13 @@ $("#adminBookingsTable").innerHTML = bookings.length ? `
 </tr>
 </thead>
 
+
 <tbody>
 
 ${bookings.map(b=>{
 
-const car=cars.find(c=>c.id===b.carId);
+const car = cars.find(c=>c.id === b.carId);
+
 
 return `
 
@@ -164,17 +187,28 @@ ${esc(b.customerName)}<br>
 ${esc(b.customerEmail)}
 </td>
 
-<td>${esc(car?.name || "Unknown")}</td>
+
+<td>
+${esc(car?.name || "Unknown")}
+</td>
+
 
 <td>
 ${esc(b.pickup)}
-→
+ →
 ${esc(b.return)}
 </td>
 
-<td>${money(b.total)}</td>
 
-<td>${esc(b.status)}</td>
+<td>
+${money(b.total)}
+</td>
+
+
+<td>
+${esc(b.status)}
+</td>
+
 
 </tr>
 
@@ -182,56 +216,82 @@ ${esc(b.return)}
 
 }).join("")}
 
+
 </tbody>
 
 </table>
 
-`:
+`
+:
 `<div class="empty">No reservations yet.</div>`;
 
 }
 
 
 
-function openModal(){
+// ==========================
+// MODAL
+// ==========================
+
+
+function openEditor(){
+
  $("#editorModal").classList.remove("hidden");
+
  document.body.style.overflow="hidden";
+
 }
 
 
-function closeModal(){
+function closeEditor(){
+
  $("#editorModal").classList.add("hidden");
+
  document.body.style.overflow="";
+
 }
 
 
 
 function setPreview(src=""){
- pendingImage=src;
- $("#imagePreview").classList.toggle("hidden",!src);
- $("#imagePreviewImg").src=src;
+
+ pendingImage = src;
+
+ $("#imagePreview")
+ .classList.toggle("hidden", !src);
+
+ $("#imagePreviewImg").src = src || "";
+
 }
 
+
+
+// ==========================
+// CAR ACTIONS
+// ==========================
 
 
 function newCar(){
 
  $("#editorTitle").textContent="Add vehicle";
+
  $("#editorForm").reset();
+
  $("#editCarId").value="";
+
  $("#carAvailable").checked=true;
 
  setPreview();
 
- openModal();
+ openEditor();
 
 }
 
 
 
-window.editCar=function(id){
+window.editCar = function(id){
 
-const car=cars.find(c=>c.id===id);
+const car = cars.find(c=>c.id===id);
 
 if(!car)return;
 
@@ -240,29 +300,32 @@ $("#editorTitle").textContent="Edit vehicle";
 
 $("#editCarId").value=car.id;
 
-$("#carName").value=car.name;
-$("#carBrand").value=car.brand;
-$("#carCategory").value=car.category;
-$("#carPrice").value=car.price;
-$("#carSeats").value=car.seats;
-$("#carTransmission").value=car.transmission;
-$("#carFuel").value=car.fuel;
-$("#carColor").value=car.color;
-$("#carPlate").value=car.plate;
-$("#carDescription").value=car.description;
+$("#carName").value=car.name || "";
+$("#carBrand").value=car.brand || "";
+$("#carCategory").value=car.category || "";
+$("#carPrice").value=car.price || "";
+$("#carSeats").value=car.seats || "";
+$("#carTransmission").value=car.transmission || "";
+$("#carFuel").value=car.fuel || "";
+$("#carColor").value=car.color || "";
+$("#carPlate").value=car.plate || "";
+$("#carDescription").value=car.description || "";
 $("#carAvailable").checked=car.available;
+
 
 setPreview(car.image);
 
-openModal();
 
-}
+openEditor();
+
+};
 
 
 
-window.deleteCar=async function(id){
 
-if(!confirm("Delete this vehicle?"))return;
+window.deleteCar = async function(id){
+
+if(!confirm("Delete this vehicle?")) return;
 
 
 const {error}=await db
@@ -272,9 +335,13 @@ const {error}=await db
 
 
 if(error){
+
 console.error(error);
+
 toast("Delete failed");
+
 return;
+
 }
 
 
@@ -282,92 +349,34 @@ await renderAdmin();
 
 toast("Vehicle deleted");
 
-}
-
-
-
-function toast(message){
-
-const t=$("#toast");
-
-t.textContent=message;
-
-t.classList.add("show");
-
-setTimeout(()=>t.classList.remove("show"),2000);
-
-}
-
-
-
-document.addEventListener("DOMContentLoaded",()=>{
-
-
-showState();
-
-
-$("#adminLoginForm").onsubmit=e=>{
-
-e.preventDefault();
-
-if($("#adminPassword").value==="admin123"){
-
-logged=true;
-
-sessionStorage.setItem(
-"hotspot_rental_admin",
-"1"
-);
-
-showState();
-
-}
-
-else{
-
-$("#adminError").textContent="Incorrect password";
-
-}
-
 };
 
 
 
-$("#adminLogout").onclick=()=>{
-
-logged=false;
-
-sessionStorage.removeItem(
-"hotspot_rental_admin"
-);
-
-showState();
-
-};
+// ==========================
+// SAVE CAR
+// ==========================
 
 
-
-$("#addCar").onclick=newCar;
-
-
-
-$("#editorForm").onsubmit=async e=>{
+$("#editorForm").onsubmit = async function(e){
 
 e.preventDefault();
 
 
-const id=$("#editCarId").value || uid();
+const id =
+$("#editCarId").value || uid();
 
 
-const car={
+
+const car = {
 
 id,
 
-name:$("#carName").value,
+name: $("#carName").value.trim(),
 
-brand:$("#carBrand").value,
+brand: $("#carBrand").value.trim(),
 
-category:$("#carCategory").value,
+category: $("#carCategory").value.trim(),
 
 price:Number($("#carPrice").value),
 
@@ -377,13 +386,13 @@ transmission:$("#carTransmission").value,
 
 fuel:$("#carFuel").value,
 
-color:$("#carColor").value,
+color:$("#carColor").value.trim(),
 
-plate:$("#carPlate").value,
+plate:$("#carPlate").value.trim(),
 
 image:pendingImage,
 
-description:$("#carDescription").value,
+description:$("#carDescription").value.trim(),
 
 available:$("#carAvailable").checked
 
@@ -408,28 +417,22 @@ return;
 }
 
 
-closeModal();
+closeEditor();
 
 await renderAdmin();
 
-toast(
-$("#editCarId").value
-?"Vehicle updated"
-:"Vehicle added"
-);
+
+toast("Vehicle saved");
 
 
 };
 
 
 
-$$("[data-close]").forEach(el=>{
-el.onclick=closeModal;
-});
 
-
-});
-
+// ==========================
+// LOGIN
+// ==========================
 
 
 async function showState(){
@@ -437,8 +440,10 @@ async function showState(){
 $("#adminLogin")
 .classList.toggle("hidden",logged);
 
+
 $("#adminDashboard")
 .classList.toggle("hidden",!logged);
+
 
 
 if(logged){
@@ -446,5 +451,152 @@ if(logged){
 await renderAdmin();
 
 }
+
+}
+
+
+
+document.addEventListener("DOMContentLoaded",()=>{
+
+
+showState();
+
+
+
+$("#adminLoginForm").onsubmit=e=>{
+
+e.preventDefault();
+
+
+if($("#adminPassword").value==="admin123"){
+
+
+logged=true;
+
+
+sessionStorage.setItem(
+"hotspot_rental_admin",
+"1"
+);
+
+
+showState();
+
+
+}
+
+else{
+
+$("#adminError").textContent="Incorrect password";
+
+}
+
+};
+
+
+
+$("#adminLogout").onclick=()=>{
+
+
+logged=false;
+
+
+sessionStorage.removeItem(
+"hotspot_rental_admin"
+);
+
+
+showState();
+
+
+};
+
+
+
+$("#addCar").onclick=newCar;
+
+
+
+$("#clearImage").onclick=()=>{
+
+$("#carImageFile").value="";
+
+setPreview();
+
+};
+
+
+
+$("#carImageFile").onchange=e=>{
+
+const file=e.target.files[0];
+
+if(!file)return;
+
+
+const reader=new FileReader();
+
+
+reader.onload=()=>setPreview(reader.result);
+
+
+reader.readAsDataURL(file);
+
+
+};
+
+
+
+$$("[data-close]").forEach(btn=>{
+
+btn.onclick=closeEditor;
+
+});
+
+
+
+$$("[data-tab]").forEach(btn=>{
+
+btn.onclick=()=>{
+
+
+$$("[data-tab]")
+.forEach(x=>x.classList.remove("active"));
+
+
+btn.classList.add("active");
+
+
+$("#adminCarsTab")
+.classList.toggle("hidden",btn.dataset.tab!=="cars");
+
+
+$("#adminBookingsTab")
+.classList.toggle("hidden",btn.dataset.tab!=="bookings");
+
+
+};
+
+});
+
+
+});
+
+
+
+function toast(msg){
+
+const t=$("#toast");
+
+t.textContent=msg;
+
+t.classList.add("show");
+
+
+setTimeout(()=>{
+
+t.classList.remove("show");
+
+},2200);
 
 }
