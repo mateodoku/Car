@@ -31,10 +31,16 @@ async function showState() {
 }
 
 async function renderAdmin() {
-  const { data, error } = await db.from("bookings").select("*").order("created_at", { ascending: false });
+const { data, error } = await db
+  .from("bookings")
+  .select("*")
+  .order("created_at", { ascending: false });
 
-  if (!error) {
-    bookings = data || [];
+if (error) {
+  console.log(error);
+} else {
+  bookings = data || [];
+}
   }
   $("#metricCars").textContent = cars.length;
   $("#metricAvailable").textContent = cars.filter(car => car.available).length;
