@@ -1,0 +1,4 @@
+const db = supabase.createClient(
+  "https://gcqqhwsjqphaygjxtqdy.supabase.co",
+  "sb_publishable_9wA0UzltX30hwMdhZynvmg_p_zy8oHb"
+);
