@@ -33,16 +33,15 @@ async function showState() {
 
 async function renderAdmin() {
 
-  const { data, error } = await db
-    .from("bookings")
-    .select("*")
-    .order("created_at", { ascending: false });
+    const { data, error } = await db
+        .from("bookings")
+        .select("*");
 
-  if (error) {
-    console.log(error);
-    bookings = [];
-  } else {
+    console.log("DATA:", data);
+    console.log("ERROR:", error);
+
     bookings = data || [];
+
   }
 
   $("#metricCars").textContent = cars.length;
