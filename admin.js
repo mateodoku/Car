@@ -17,7 +17,7 @@ const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&a
 const money = value => new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(Number(value) || 0);
 const uid = prefix => `${prefix}${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
 let cars = load(KEY, LEGACY_KEY, DEFAULT);
-let bookings = load(BOOKING_KEY, LEGACY_BOOKING_KEY, []);
+let bookings = [];
 const plateRefresh = { "HS 911 GT": "HS 001 HR", "HS 063 AMG": "HS 063 HR", "HS 004 M4": "HS 004 HR", "HS 001 EGT": "HS 007 HR" };
 cars = cars.map(car => plateRefresh[car.plate] ? { ...car, plate: plateRefresh[car.plate] } : car);
 save(KEY, cars);
@@ -30,7 +30,12 @@ function showState() {
   if (logged) renderAdmin();
 }
 
-function renderAdmin() {
+async function renderAdmin() {
+  const { data, error } = await db.from("bookings").select("*").order("created_at", { ascending: false });
+
+  if (!error) {
+    bookings = data || [];
+  }
   $("#metricCars").textContent = cars.length;
   $("#metricAvailable").textContent = cars.filter(car => car.available).length;
   $("#metricBookings").textContent = bookings.length;
