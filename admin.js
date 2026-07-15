@@ -105,33 +105,22 @@ async function renderAdmin() {
 
   <tbody>
 
-  ${bookings.map(booking => {
+${bookings.map(booking => { 
+const car = cars.find(item => item.id === booking.carid);
 
-    const car = cars.find(item => item.id === booking.carid);
+return `
+<tr>
+<td>${esc(booking.reference)}</td>
+<td>${esc(booking.customername)}</td>
+<td>${esc(car?.name || "Removed")}</td>
+<td>${esc(booking.pickup)} → ${esc(booking.return)}</td>
+<td>${money(booking.total)}</td>
+<td>${esc(booking.status)}</td>
+</tr>
+`;
 
-    return `
-    <tr>
-    <td>${esc(booking.reference)}</td>
-    <td>
-    ${esc(booking.customerName)}<br>
-    ${esc(booking.customerEmail)}
-    </td>
-
-    <td>${esc(car?.name || booking.carid)}</td>
-
-    <td>
-    ${esc(booking.pickup)} → ${esc(booking.return)}
-    </td>
-
-    <td>${money(booking.total)}</td>
-
-    <td>${esc(booking.status)}</td>
-
-    </tr>
-    `;
-
-  }).join("")}
-
+}).join("")}
+  
   </tbody>
 
   </table>`
