@@ -38,8 +38,40 @@ function list(){let x=cars.filter(c=>(!filters.category||c.category===filters.ca
 function renderCars(){const x=list();$("#carsGrid").innerHTML=x.map((c,i)=>`<article class="car reveal"><div class="car-img"><img src="${esc(c.image)}" alt="${esc(c.name)}"><span class="index">${String(i+1).padStart(2,"0")}</span>${!c.available?'<span class="unavailable">Unavailable</span>':''}</div><div class="car-body"><div class="car-title"><div><h3>${esc(c.name)}</h3><p>${esc(c.brand)} · ${esc(c.category)} · ${esc(c.color)}</p></div><div class="price"><b>${money(c.price)}</b><small>/ day</small></div></div><div class="specs"><span>${c.seats} seats</span><span>${esc(c.transmission)}</span><span>${esc(c.fuel)}</span><span>${c.available?"Available":"Unavailable"}</span></div><button ${c.available?"":"disabled"} onclick="openBooking('${c.id}')">${c.available?"Reserve vehicle":"Not available"}</button></div></article>`).join("");$("#emptyCars").classList.toggle("hidden",x.length>0);observe()}
 function renderBookings(){$("#bookingsEmpty").classList.toggle("hidden",bookings.length>0);$("#bookingsList").innerHTML=bookings.slice().reverse().map(b=>{const c=cars.find(x=>x.id===b.carId)||{name:"Removed car"};return `<article class="booking"><div><span class="status">${esc(b.status)}</span><h3>${esc(c.name)}</h3><div class="booking-meta"><span>${esc(b.pickup)} → ${esc(b.return)}</span><span>${b.days} days</span><span>${esc(b.reference)}</span><span>${esc(b.customerName)}</span></div></div><div class="booking-side"><b>${money(b.total)}</b>${b.status!=="Cancelled"?`<button onclick="cancelBooking('${b.id}')">Cancel</button>`:""}</div></article>`}).join("")}
 window.openBooking=id=>{const c=cars.find(x=>x.id===id);if(!c)return;selected=c;const p=filters.pickup||$("#pickupDate").value,r=filters.return||$("#returnDate").value,d=days(p,r);$("#bookingContent").innerHTML=`<span>RESERVE YOUR VEHICLE</span><h2>${esc(c.name)}</h2><p>${esc(c.description)}</p><form id="bookingForm" class="stack"><label>Full name<input id="customerName" required></label><label>Email<input id="customerEmail" type="email" required></label><label>Phone<input id="customerPhone" required></label><label>Pickup<input id="bookingPickup" type="date" value="${p}" required></label><label>Return<input id="bookingReturn" type="date" value="${r}" required></label><button>Confirm · ${money(d*c.price)}</button></form>`;openModal("booking");$("#bookingForm").onsubmit=book}
-function book(e){e.preventDefault();const p=$("#bookingPickup").value,r=$("#bookingReturn").value;if(new Date(r)<=new Date(p)){toast("Return date must be after pickup");return}const d=days(p,r);bookings.push({id:uid("b_"),reference:"HS-"+Math.random().toString(36).slice(2,8).toUpperCase(),carId:selected.id,customerName:$("#customerName").value.trim(),customerEmail:$("#customerEmail").value.trim(),customerPhone:$("#customerPhone").value.trim(),pickup:p,return:r,days:d,total:d*selected.price,status:"Confirmed"});save(BOOKING_KEY,bookings);closeModal("booking");renderBookings();toast("Reservation confirmed")}
-window.cancelBooking=id=>{const b=bookings.find(x=>x.id===id);if(b&&confirm("Cancel this booking?")){b.status="Cancelled";save(BOOKING_KEY,bookings);renderBookings();toast("Reservation cancelled")}}
+async function book(e){
+e.preventDefault();
+
+const p=$("#bookingPickup").value;
+const r=$("#bookingReturn").value;
+
+if(new Date(r)<=new Date(p)){
+  toast("Return date must be after pickup");
+  return;
+}
+
+const d=days(p,r);
+
+const booking={
+  reference:"HS-"+Math.random().toString(36).slice(2,8).toUpperCase(),
+  carId:selected.id,
+  customerName:$("#customerName").value.trim(),
+  customerEmail:$("#customerEmail").value.trim(),
+  customerPhone:$("#customerPhone").value.trim(),
+  pickup:p,
+  return:r,
+  days:d,
+  total:d*selected.price,
+  status:"Confirmed"
+};
+
+await db.from("bookings").insert(booking);
+
+bookings.push(booking);
+
+closeModal("booking");
+renderBookings();
+toast("Reservation confirmed");
+}window.cancelBooking=id=>{const b=bookings.find(x=>x.id===id);if(b&&confirm("Cancel this booking?")){b.status="Cancelled";save(BOOKING_KEY,bookings);renderBookings();toast("Reservation cancelled")}}
 function openModal(n){$("#"+n+"Modal").classList.remove("hidden");document.body.style.overflow="hidden"}function closeModal(n){$("#"+n+"Modal").classList.add("hidden");if($$(".modal:not(.hidden)").length===0)document.body.style.overflow=""}
 function observe(){const o=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("visible");o.unobserve(e.target)}}),{threshold:.1});$$(".reveal:not(.visible)").forEach(e=>o.observe(e))}
 function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200)}
