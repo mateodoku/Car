@@ -24,10 +24,10 @@ save(KEY, cars);
 let logged = sessionStorage.getItem("hotspot_rental_admin") === "1";
 let pendingImage = "";
 
-function showState() {
+async function showState() {
   $("#adminLogin").classList.toggle("hidden", logged);
   $("#adminDashboard").classList.toggle("hidden", !logged);
-  if (logged) renderAdmin();
+  if (logged) await renderAdmin();
 }
 
 async function renderAdmin() {
