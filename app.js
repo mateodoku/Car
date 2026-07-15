@@ -67,11 +67,10 @@ const booking={
 const { data, error } = await db.from("bookings").insert(booking);
 
 if(error){
-  console.error("SUPABASE ERROR:", error);
-  toast("Booking failed");
+  alert(JSON.stringify(error));
+  console.error(error);
   return;
 }
-
 console.log("BOOKING SENT:", data);
 bookings.push(booking);
 
