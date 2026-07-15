@@ -64,8 +64,15 @@ const booking={
   status:"Confirmed"
 };
 
-await db.from("bookings").insert(booking);
+const { data, error } = await db.from("bookings").insert(booking);
 
+if(error){
+  console.error("SUPABASE ERROR:", error);
+  toast("Booking failed");
+  return;
+}
+
+console.log("BOOKING SENT:", data);
 bookings.push(booking);
 
 closeModal("booking");
